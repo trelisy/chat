@@ -34,16 +34,25 @@
     text-align: center;
   }
 
-  .tabs { display: flex; margin-bottom: 20px; }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.3s;
-  }
-  .tab.active { border-bottom: 2px solid #00ffc6; font-weight: bold; }
+  .tabs {
+  display: flex;
+  margin-bottom: 20px;
+  gap: 10px; /* add space between tabs */
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0; /* slightly bigger padding */
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.tab.active {
+  border-bottom: 2px solid #00ffc6;
+  font-weight: bold;
+}
 
   .form-group {
     width: 100%;
@@ -102,7 +111,7 @@
 <body>
 
 <div class="container">
-  <h1>Welcome to Chat</h1>
+  <h1>Welcome to Gamarjoba Chat</h1>
 
   <div class="tabs">
     <div class="tab active" id="loginTab">Login</div>
