@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Login/Register</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #0a0a0f;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #eaeaea;
+    }
+
+    .container {
+      background-color: #141421;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 255, 198, 0.3);
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container h1 {
+      color: #00ffc6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.3s;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid #00ffc6;
+      font-weight: bold;
+    }
+
+    .form-group {
+      width: 100%;
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      color: #9ae4ff;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      padding: 12px 15px;
+      border-radius: 25px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background-color: #1e1e2b;
+      color: #eaeaea;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #1e1e2b;
+      margin-bottom: 15px;
+      object-fit: cover;
+      display: none;
+    }
+
+    button {
+      padding: 12px 25px;
+      border-radius: 25px;
+      border: none;
+      background-color: #00ffc6;
+      color: #0a0a0f;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #37ffd5;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px;
+      }
+
+      .form-group input {
+        font-size: 14px;
+        padding: 10px 12px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Welcome to Chat</h1>
+
+  <div class="tabs">
+    <div class="tab active" id="loginTab">Login</div>
+    <div class="tab" id="registerTab">Register</div>
+  </div>
+
+  <img src="" alt="Avatar" class="avatar-preview" id="avatarPreview">
+
+  <div id="formContainer">
+    <!-- Login Form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password">
+      </div>
+      <button id="loginBtn">Login</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" style="display:none;">
+      <div class="form-group">
+        <label for="regEmail">Email</label>
+        <input type="email" id="regEmail" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="regPassword">Password</label>
+        <input type="password" id="regPassword" placeholder="Enter your password">
+      </div>
+      <div class="form-group">
+        <label for="regName">Display Name</label>
+        <input type="text" id="regName" placeholder="Your display name">
+      </div>
+      <div class="form-group">
+        <label for="regAvatar">Upload Avatar (optional)</label>
+        <input type="file" id="regAvatar" accept="image/*">
+      </div>
+      <button id="registerBtn">Register</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpfkkOznjSvyyaEWNsG00huwlA8ObY6j8",
+    authDomain: "chat-80d74.firebaseapp.com",
+    projectId: "chat-80d74",
+    storageBucket: "chat-80d74.appspot.com",
+    messagingSenderId: "1085559718603",
+    appId: "1:1085559718603:web:c7a9a7f26b1535d080514e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
+
+  // Tabs
+  const loginTab = document.getElementById('loginTab');
+  const registerTab = document.getElementById('registerTab');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+
+  loginTab.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    document.getElementById('avatarPreview').style.display = 'none';
+  });
+
+  registerTab.addEventListener('click', () => {
+    registerTab.classList.add('active');
+    loginTab.classList.remove('active');
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  });
+
+  // Avatar preview
+  const regAvatar = document.getElementById('regAvatar');
+  const avatarPreview = document.getElementById('avatarPreview');
+
+  regAvatar.addEventListener('change', () => {
+    const file = regAvatar.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        avatarPreview.src = reader.result;
+        avatarPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Register
+  document.getElementById('registerBtn').addEventListener('click', async () => {
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const displayName = document.getElementById('regName').value;
+
+    if (!email || !password || !displayName) {
+      alert('Please fill all required fields');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      let avatarURL = '';
+      if (regAvatar.files[0]) {
+        const file = regAvatar.files[0];
+        const storageRef = sRef(storage, `avatars/${user.uid}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        avatarURL = await getDownloadURL(storageRef);
+      }
+
+      await updateProfile(user, { displayName, photoURL: avatarURL });
+
+      alert('Registration successful!');
+      window.location.href = 'chat.html'; // redirect to chat
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  // Login
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      alert('Please enter email and password');
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = 'chat.html'; // redirect to chat
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  // Auto-login: redirect to chat if user is already logged in
+ window.addEventListener('load', () => {
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      // Only redirect if user really intends to go to chat
+      // Optionally add a "Go to Chat" button instead
+      console.log('User already logged in:', user.email);
+      // You can comment out automatic redirect for testing:
+      // window.location.href = 'chat.html';
+    }
+  });
+});
+
+
+</script>
+</body>
+</html>
