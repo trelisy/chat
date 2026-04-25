@@ -360,7 +360,7 @@
 
   // Clock
   setInterval(() => {
-    document.getElementById('clock').textContent = new Date().toUTCString().slice(17,25) + ' UTC';
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }) + ' ET';
   }, 1000);
 
   onAuthStateChanged(auth, async user => {
@@ -429,7 +429,7 @@
       }
     } catch { avatarHTML = `<div class="avatar-placeholder">?</div>`; }
 
-    const timeStr = val.time ? new Date(val.time).toUTCString().slice(17,25) : '';
+    const timeStr = val.time ? new Date(val.time).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }) : '';
 
     const wrap = document.createElement('div');
     wrap.className = 'msg-wrap' + (isMine ? ' mine' : '');
@@ -441,7 +441,7 @@
         ${!isMine ? `<span class="sender-tag">▸ ${val.sender}</span>` : ''}
         ${val.msg ? val.msg : ''}
         ${val.img ? `<img src="${val.img}" class="chat-img">` : ''}
-        <span class="msg-time">${timeStr} UTC</span>
+        <span class="msg-time">${timeStr} ET</span>
         ${isMine ? `<button class="del-btn" onclick="window._del('${data.key}')">✕</button>` : ''}
       </div>
       ${isMine ? avatarHTML : ''}
