@@ -301,6 +301,28 @@
   @media (max-width: 640px) {
     .msg-wrap { max-width: 95%; }
   }
+
+  /* ── ROLE COLORS ── */
+  /* Each role class sets the bubble border, sender tag color, and bg tint */
+  .role-red .bubble       { border-color: rgba(255,59,48,0.5) !important; background: #1a0505 !important; }
+  .role-red .sender-tag   { color: #ff3b30 !important; }
+  .role-red .bubble .msg-text { color: #ff9990; }
+
+  .role-amber .bubble     { border-color: rgba(255,179,0,0.5) !important; background: #150f00 !important; }
+  .role-amber .sender-tag { color: #ffb300 !important; }
+  .role-amber .bubble .msg-text { color: #ffd980; }
+
+  .role-cyan .bubble      { border-color: rgba(0,229,255,0.5) !important; background: #001518 !important; }
+  .role-cyan .sender-tag  { color: #00e5ff !important; }
+  .role-cyan .bubble .msg-text { color: #80f4ff; }
+
+  .role-purple .bubble    { border-color: rgba(180,80,255,0.5) !important; background: #110018 !important; }
+  .role-purple .sender-tag{ color: #b450ff !important; }
+  .role-purple .bubble .msg-text { color: #d9a0ff; }
+
+  .role-white .bubble     { border-color: rgba(220,220,220,0.4) !important; background: #101210 !important; }
+  .role-white .sender-tag { color: #cccccc !important; }
+  .role-white .bubble .msg-text { color: #dddddd; }
 </style>
 </head>
 <body>
@@ -347,6 +369,18 @@
   const db = getDatabase(app);
   const storage = getStorage(app);
   const auth = getAuth(app);
+
+  // ── USER ROLE COLORS ────────────────────────────────────────
+  // Add any UID here and assign a color role.
+  // Available colors: 'red' | 'amber' | 'cyan' | 'purple' | 'white'
+  // Example:
+  //   'ABC123uid': 'red',
+  //   'XYZ789uid': 'amber',
+  const USER_ROLES = {
+   'd2ACsuQimagBFR4liwoHcpThaQs2': 'white',
+   'YLOQ7pZt2hWaW7ZipMciAOLrxag1': 'amber'
+  };
+  // ────────────────────────────────────────────────────────────
 
   const msgTxt = document.getElementById("msgTxt");
   const imgInput = document.getElementById("imgInput");
@@ -459,14 +493,15 @@
     const timeStr = val.time ? new Date(val.time).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }) : '';
 
     const wrap = document.createElement('div');
-    wrap.className = 'msg-wrap' + (isMine ? ' mine' : '');
+    const roleClass = USER_ROLES[val.uid] ? ` role-${USER_ROLES[val.uid]}` : '';
+    wrap.className = 'msg-wrap' + (isMine ? ' mine' : '') + roleClass;
     wrap.id = data.key;
 
     wrap.innerHTML = `
       ${!isMine ? avatarHTML : ''}
       <div class="bubble">
         ${!isMine ? `<span class="sender-tag">▸ ${val.sender}</span>` : ''}
-        ${val.msg ? val.msg : ''}
+        ${val.msg ? `<span class="msg-text">${val.msg}</span>` : ''}
         ${val.img ? `<img src="${val.img}" class="chat-img">` : ''}
         <span class="msg-time">${timeStr} ET</span>
         ${isMine ? `<button class="del-btn" onclick="window._del('${data.key}')">✕</button>` : ''}
