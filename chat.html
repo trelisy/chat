@@ -84,7 +84,18 @@
 
   .nav-link.active { color: var(--green); }
 
-  #logoutBtn {
+  .notif-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .notif-btn:hover { border-color: var(--green); color: var(--green); }
+  .notif-btn.active { border-color: var(--green); color: var(--green); text-shadow: 0 0 8px rgba(57,255,20,0.6); }
     background: none;
     border: 1px solid var(--border);
     color: var(--dim);
@@ -116,7 +127,46 @@
   .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--green); margin-right: 5px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-  /* MESSAGES */
+  .notif-banner {
+    background: rgba(57,255,20,0.06);
+    border-bottom: 1px solid var(--green);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    animation: msgIn 0.3s ease-out;
+  }
+
+  .notif-banner span {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--green);
+  }
+
+  .notif-banner-btn {
+    background: var(--green);
+    border: none;
+    color: var(--dark);
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .notif-banner-close {
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
   #messages {
     flex: 1;
     overflow-y: auto;
@@ -319,6 +369,12 @@
   <span id="clock">--:--:-- UTC</span>
 </div>
 
+<div class="notif-banner" id="notifBanner" style="display:none;">
+  <span>🔔 ENABLE NOTIFICATIONS TO RECEIVE ALERTS</span>
+  <button class="notif-banner-btn" id="notifAllowBtn">ALLOW</button>
+  <button class="notif-banner-close" id="notifDismissBtn">✕</button>
+</div>
+
 <div id="messages"></div>
 
 <div id="sendMsg">
@@ -364,21 +420,36 @@
   }, 1000);
 
   // ── NOTIFICATIONS ──────────────────────────────────────────
-  async function requestNotifPermission() {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
+  const notifBanner = document.getElementById('notifBanner');
+  const notifAllowBtn = document.getElementById('notifAllowBtn');
+  const notifDismissBtn = document.getElementById('notifDismissBtn');
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    notifBanner.style.display = 'flex';
   }
 
-  function sendNotif(title, body, icon = '') {
+  notifAllowBtn.addEventListener('click', async () => {
+    const result = await Notification.requestPermission();
+    notifBanner.style.display = 'none';
+    if (result === 'granted') {
+      new Notification('HERMES // ONLINE', { body: '▸ Transmission alerts are now active.' });
+    }
+  });
+
+  notifDismissBtn.addEventListener('click', () => {
+    notifBanner.style.display = 'none';
+  });
+
+  function sendNotif(title, body) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    if (document.visibilityState === 'visible') return; // only notify when tab is hidden
-    const n = new Notification(title, { body, icon, silent: false });
+    if (document.visibilityState === 'visible') return;
+    const n = new Notification(title, { body });
     n.onclick = () => { window.focus(); n.close(); };
     setTimeout(() => n.close(), 6000);
   }
   // ────────────────────────────────────────────────────────────
+
+  async function requestNotifPermission() {}
 
   onAuthStateChanged(auth, async user => {
     if (!user) { window.location.href = "index.html"; return; }
