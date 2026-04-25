@@ -3,297 +3,465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gamrajoba</title>
-
+<title>BARLIFT // COMMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --green: #39ff14;
+    --amber: #ffb300;
+    --red: #ff3b30;
+    --dark: #070a05;
+    --panel: #0d1209;
+    --panel2: #101810;
+    --border: #2a3d1c;
+    --text: #b8d4a0;
+    --dim: #4a6b38;
+    --msg-me: #0f2b0a;
+    --msg-other: #0a1209;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-  margin: 0;
-  padding: 0;
-  background-color: #0a0a0f;
-  color: #eaeaea;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  flex-direction: column;
-  height: 100dvh; /* Use dynamic viewport height */
-  overflow: hidden;
-}
+    background-color: var(--dark);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+    position: relative;
+  }
 
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* NAVBAR */
   #navbar {
-    background-color: #141421;
-    height: 60px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.7);
-    z-index: 10;
+    padding: 0 16px;
+    z-index: 50;
+    flex-shrink: 0;
   }
 
-  #navbar a { color: #00ffc6; text-decoration: none; font-weight: 500; transition: color 0.3s; }
-  #navbar a:hover { color: #37ffd5; }
-  #navbar span { color: #cfcfcf; font-size: 18px; }
+  .nav-brand {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(57,255,20,0.4);
+  }
 
+  .nav-links { display: flex; gap: 6px; align-items: center; }
 
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 20px calc(90px + env(safe-area-inset-bottom)) 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
+  .nav-link {
+    color: var(--dim);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
 
-#sendMsg {
-  background-color: #141421;
-  display: flex;
-  align-items: center;
-  padding: 10px env(safe-area-inset-left) 10px env(safe-area-inset-right);
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.5);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-}
+  .nav-link:hover, .nav-link.active {
+    color: var(--green);
+    border-color: var(--border);
+    background: rgba(57,255,20,0.05);
+  }
 
+  .nav-link.active { color: var(--green); }
+
+  #logoutBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  #logoutBtn:hover { border-color: var(--red); color: var(--red); }
+
+  /* STATUS BAR */
+  .status-strip {
+    background: rgba(57,255,20,0.04);
+    border-bottom: 1px solid var(--border);
+    padding: 4px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .status-strip .live { color: var(--green); }
+  .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--green); margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* MESSAGES */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px calc(70px + env(safe-area-inset-bottom)) 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .msg-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 85%;
+    animation: msgIn 0.2s ease-out;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-wrap.mine { margin-left: auto; flex-direction: row-reverse; }
+
+  .avatar-img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    object-fit: cover;
+    flex-shrink: 0;
+    filter: saturate(0.3);
+  }
+
+  .avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  .bubble {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: var(--msg-other);
+    position: relative;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  .mine .bubble {
+    background: var(--msg-me);
+    border-color: rgba(57,255,20,0.25);
+  }
+
+  .sender-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .msg-time {
+    font-size: 9px;
+    color: var(--dim);
+    margin-top: 4px;
+    display: block;
+    letter-spacing: 1px;
+  }
+
+  img.chat-img {
+    max-width: 220px;
+    max-height: 220px;
+    display: block;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+    filter: saturate(0.6);
+  }
+
+  .del-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--red);
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .mine .bubble:hover .del-btn { display: flex; }
+
+  /* INPUT BAR */
+  #sendMsg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+  }
 
   #msgTxt {
     flex: 1;
-    height: 45px;
-    border-radius: 25px;
-    border: none;
-    padding: 0 15px;
-    background-color: #1e1e2b;
-    color: #f5f5f5;
-    font-size: 16px;
-    outline: none;
-  }
-
-  #msgBtn, #imgBtn {
-    margin-left: 10px;
-    border: none;
-    border-radius: 25px;
-    background-color: #00ffc6;
-    color: #0d0d0d;
-    font-weight: bold;
-    padding: 10px 18px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  #msgBtn:hover, #imgBtn:hover { background-color: #37ffd5; }
-
-  .outer {
-    display: flex;
-    margin: 10px 0;
-    max-width: 80%;
-    position: relative;
-    align-items: flex-end;
-  }
-
-  #inner {
-    padding: 12px 16px;
-    border-radius: 18px;
-    word-wrap: break-word;
-    line-height: 1.4;
-    font-size: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    position: relative;
-  }
-
-  .me { background-color: #00ffc6; color: #0a0a0a; margin-left: auto; }
-  .notMe { background-color: #2f2f6d; color: #ffffff; }
-
-  .sender-name { font-size: 14px; font-weight: bold; color: #9ae4ff; margin-bottom: 4px; display: block; }
-
-  img.chat-img { max-width: 250px; max-height: 250px; width: auto; height: auto; border-radius: 10px; margin-top: 8px; border: 1px solid #333; }
-
-  img.avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
-
-  .delBtn {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background-color: #141421;
-    color: #00ffc6;
-    border: none;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    background: #080d06;
+    border: 1px solid var(--border);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
     font-size: 14px;
-    cursor: pointer;
-    box-shadow: 0 0 6px rgba(0,255,198,0.4);
-    transition: background-color 0.3s, transform 0.2s;
+    padding: 10px 14px;
+    outline: none;
+    letter-spacing: 1px;
+    transition: border-color 0.2s;
   }
 
-  .delBtn:hover { background-color: #00ffc6; color: #0d0d0d; transform: scale(1.1); }
+  #msgTxt:focus { border-color: var(--green); }
+  #msgTxt::placeholder { color: var(--dim); font-size: 12px; }
 
-  @media (max-width: 768px) {
-    #msgTxt { font-size: 18px; }
-    #msgBtn, #imgBtn { font-size: 16px; padding: 10px 14px; }
-    .outer { max-width: 100%; }
-    img.chat-img { max-width: 70vw; max-height: 70vw; }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .icon-btn:hover { border-color: var(--green); color: var(--green); }
+
+  #msgBtn {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    padding: 0 16px;
+    height: 42px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  #msgBtn:hover {
+    background: var(--green);
+    color: var(--dark);
+  }
+
+  @media (max-width: 640px) {
+    .msg-wrap { max-width: 95%; }
   }
 </style>
 </head>
-
 <body>
-  <div id="navbar">
-    <a href="index.html">Home</a>
-    <span>💬 Chat</span>
-    <button id="logoutBtn" style="background:none;border:none;color:#00ffc6;cursor:pointer;font-weight:bold;">Logout</button>
+
+<div id="navbar">
+  <div class="nav-brand">HERMES</div>
+  <div class="nav-links">
+    <a href="chat.html" class="nav-link active">COMMS</a>
+    <a href="missions.html" class="nav-link">MISSIONS</a>
+    <button id="logoutBtn">DISCONNECT</button>
   </div>
+</div>
 
-  <div id="messages"></div>
+<div class="status-strip">
+  <span><span class="dot"></span><span class="live">CHANNEL OPEN</span> // ENCRYPTED</span>
+  <span id="clock">--:--:-- UTC</span>
+</div>
 
-  <div id="sendMsg">
-    <input type="file" id="imgInput" accept="image/*" style="display:none">
-    <button id="imgBtn">📷</button>
-    <input type="text" id="msgTxt" placeholder="Type a message...">
-    <button id="msgBtn">Send</button>
-  </div>
+<div id="messages"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getDatabase, ref, set, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+<div id="sendMsg">
+  <input type="file" id="imgInput" accept="image/*" style="display:none">
+  <button class="icon-btn" id="imgBtn" title="Upload Image">📡</button>
+  <input type="text" id="msgTxt" placeholder="TRANSMIT MESSAGE...">
+  <button id="msgBtn">SEND ▶</button>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpfkkOznjSvyyaEWNsG00huwlA8ObY6j8",
-      authDomain: "chat-80d74.firebaseapp.com",
-      projectId: "chat-80d74",
-      storageBucket: "chat-80d74.appspot.com",
-      messagingSenderId: "1085559718603",
-      appId: "1:1085559718603:web:c7a9a7f26b1535d080514e"
-    };
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getDatabase, ref, set, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
-    const auth = getAuth(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpfkkOznjSvyyaEWNsG00huwlA8ObY6j8",
+    authDomain: "chat-80d74.firebaseapp.com",
+    projectId: "chat-80d74",
+    storageBucket: "chat-80d74.appspot.com",
+    messagingSenderId: "1085559718603",
+    appId: "1:1085559718603:web:c7a9a7f26b1535d080514e"
+  };
 
-    const msgTxt = document.getElementById("msgTxt");
-    const imgInput = document.getElementById("imgInput");
-    const imgBtn = document.getElementById("imgBtn");
-    const msgBtn = document.getElementById("msgBtn");
-    const messages = document.getElementById("messages");
-    const logoutBtn = document.getElementById("logoutBtn");
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+  const auth = getAuth(app);
 
-    let currentUser;
+  const msgTxt = document.getElementById("msgTxt");
+  const imgInput = document.getElementById("imgInput");
+  const imgBtn = document.getElementById("imgBtn");
+  const msgBtn = document.getElementById("msgBtn");
+  const messages = document.getElementById("messages");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-    onAuthStateChanged(auth, user => {
-      if (!user) window.location.href = "index.html";
-      else currentUser = user;
-    });
+  let currentUser;
+  let currentUsername = '';
 
-    logoutBtn.onclick = async () => {
-      await signOut(auth);
-      window.location.href = "index.html";
-    };
+  // Clock
+  setInterval(() => {
+    document.getElementById('clock').textContent = new Date().toUTCString().slice(17,25) + ' UTC';
+  }, 1000);
 
-    // Send text message
-    async function sendMessage() {
-      if (!msgTxt.value.trim()) return;
-      const msg = msgTxt.value.trim();
-      const timestamp = Date.now();
-      set(ref(db, "messages/" + timestamp), {
-        msg,
-        sender: currentUser.displayName || currentUser.email,
-        uid: currentUser.uid
-      });
-      msgTxt.value = "";
-    }
-
-    msgBtn.onclick = sendMessage;
-    msgTxt.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
-
-    // Image upload
-    imgBtn.onclick = () => imgInput.click();
-    imgInput.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const timestamp = Date.now();
-      const imageRef = sRef(storage, "images/" + timestamp + "_" + file.name);
-      await uploadBytes(imageRef, file);
-      const url = await getDownloadURL(imageRef);
-      set(ref(db, "messages/" + timestamp), {
-        img: url,
-        sender: currentUser.displayName || currentUser.email,
-        uid: currentUser.uid
-      });
-    };
-
-    // Display messages with avatars
-    onChildAdded(ref(db, "messages"), async (data) => {
-      const val = data.val();
-
-      // Get sender avatar
-      let avatarURL = '';
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = "index.html"; return; }
+    currentUser = user;
+    // Try DB first, then Auth profile — never fall back to email
+    async function fetchUsername() {
       try {
-        const userSnapshot = await get(ref(db, 'users/' + val.uid));
-        if (userSnapshot.exists()) avatarURL = userSnapshot.val().avatar || '';
-      } catch (err) { console.log('Error fetching avatar:', err); }
-
-      const avatarHTML = avatarURL ? `<img src="${avatarURL}" class="avatar">` : '';
-
-      let html = "";
-      if (val.uid === currentUser.uid) {
-        html = `
-          <div class="outer" style="justify-content:flex-end" id="${data.key}">
-            <div id="inner" class="me">
-              ${val.msg ? val.msg : ""}
-              ${val.img ? `<img src="${val.img}" class="chat-img">` : ""}
-              <button class="delBtn" onclick="module.dltMsg('${data.key}')">🗑</button>
-            </div>
-          </div>`;
-      } else {
-        html = `
-          <div class="outer" id="${data.key}">
-            ${avatarHTML}
-            <div id="inner" class="notMe">
-              <span class="sender-name">${val.sender}</span>
-              ${val.msg ? val.msg : ""}
-              ${val.img ? `<img src="${val.img}" class="chat-img">` : ""}
-            </div>
-          </div>`;
+        const snap = await get(ref(db, 'users/' + user.uid));
+        console.log('DB snap exists:', snap.exists(), 'val:', snap.exists() ? snap.val() : null);
+        if (snap.exists() && snap.val().displayName) return snap.val().displayName;
+      } catch(e) {
+        console.error('DB read failed:', e);
       }
+      console.log('Auth displayName:', user.displayName);
+      if (user.displayName) return user.displayName;
+      // Reload auth in case it's stale
+      try { await user.reload(); } catch(e) {}
+      if (auth.currentUser && auth.currentUser.displayName) return auth.currentUser.displayName;
+      return 'AGENT';
+    }
+    currentUsername = await fetchUsername();
+    console.log('Final username:', currentUsername);
+  });
 
-      messages.innerHTML += html;
-      messages.scrollTop = messages.scrollHeight;
+  logoutBtn.onclick = async () => { await signOut(auth); window.location.href = "index.html"; };
+
+  async function sendMessage() {
+    if (!msgTxt.value.trim()) return;
+    const msg = msgTxt.value.trim();
+    const timestamp = Date.now();
+    set(ref(db, "messages/" + timestamp), {
+      msg, sender: currentUsername, uid: currentUser.uid, time: timestamp
     });
+    msgTxt.value = "";
+  }
 
-    // Delete message
-    window.module = {};
-    module.dltMsg = function(key) {
-      remove(ref(db, "messages/" + key));
-    };
+  msgBtn.onclick = sendMessage;
+  msgTxt.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
 
-    onChildRemoved(ref(db, "messages"), (data) => {
-      document.getElementById(data.key)?.remove();
+  imgBtn.onclick = () => imgInput.click();
+  imgInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const timestamp = Date.now();
+    const imageRef = sRef(storage, "images/" + timestamp + "_" + file.name);
+    await uploadBytes(imageRef, file);
+    const url = await getDownloadURL(imageRef);
+    set(ref(db, "messages/" + timestamp), {
+      img: url, sender: currentUsername, uid: currentUser.uid, time: timestamp
     });
+  };
 
-    // Mobile keyboard fix
-    msgTxt.addEventListener("focus", () => {
-      setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 300);
-    });
+  onChildAdded(ref(db, "messages"), async (data) => {
+    const val = data.val();
+    const isMine = currentUser && val.uid === currentUser.uid;
 
+    let avatarHTML = '';
+    try {
+      const snap = await get(ref(db, 'users/' + val.uid));
+      if (snap.exists() && snap.val().avatar) {
+        avatarHTML = `<img src="${snap.val().avatar}" class="avatar-img">`;
+      } else {
+        const initials = (val.sender || '?')[0].toUpperCase();
+        avatarHTML = `<div class="avatar-placeholder">${initials}</div>`;
+      }
+    } catch { avatarHTML = `<div class="avatar-placeholder">?</div>`; }
 
-    // Scroll messages when input is focused
-msgTxt.addEventListener("focus", () => {
-  setTimeout(() => { 
-    messages.scrollTop = messages.scrollHeight; 
-  }, 300);
-});
+    const timeStr = val.time ? new Date(val.time).toUTCString().slice(17,25) : '';
 
-// Optional: scroll again on window resize (keyboard open/close)
-window.addEventListener("resize", () => {
-  messages.scrollTop = messages.scrollHeight;
-});
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap' + (isMine ? ' mine' : '');
+    wrap.id = data.key;
 
-  </script>
+    wrap.innerHTML = `
+      ${!isMine ? avatarHTML : ''}
+      <div class="bubble">
+        ${!isMine ? `<span class="sender-tag">▸ ${val.sender}</span>` : ''}
+        ${val.msg ? val.msg : ''}
+        ${val.img ? `<img src="${val.img}" class="chat-img">` : ''}
+        <span class="msg-time">${timeStr} UTC</span>
+        ${isMine ? `<button class="del-btn" onclick="window._del('${data.key}')">✕</button>` : ''}
+      </div>
+      ${isMine ? avatarHTML : ''}
+    `;
+
+    messages.appendChild(wrap);
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  window._del = (key) => remove(ref(db, "messages/" + key));
+
+  onChildRemoved(ref(db, "messages"), (data) => {
+    document.getElementById(data.key)?.remove();
+  });
+
+  msgTxt.addEventListener("focus", () => {
+    setTimeout(() => { messages.scrollTop = messages.scrollHeight; }, 300);
+  });
+
+  window.addEventListener("resize", () => { messages.scrollTop = messages.scrollHeight; });
+</script>
 </body>
 </html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HERMES // MISSIONS</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #39ff14;
+    --amber: #ffb300;
+    --red: #ff3b30;
+    --blue: #00cfff;
+    --dark: #070a05;
+    --panel: #0d1209;
+    --panel2: #101810;
+    --border: #2a3d1c;
+    --text: #b8d4a0;
+    --dim: #4a6b38;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--dark);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+
+  /* NAVBAR */
+  #navbar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 50;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-brand {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(57,255,20,0.4);
+  }
+
+  .nav-links { display: flex; gap: 6px; align-items: center; }
+
+  .nav-link {
+    color: var(--dim);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    color: var(--green);
+    border-color: var(--border);
+    background: rgba(57,255,20,0.05);
+  }
+
+  #logoutBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  #logoutBtn:hover { border-color: var(--red); color: var(--red); }
+
+  .status-strip {
+    background: rgba(57,255,20,0.04);
+    border-bottom: 1px solid var(--border);
+    padding: 4px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+  }
+
+  .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--green); margin-right: 5px; animation: pulse 2s infinite; }
+  .dot.amber { background: var(--amber); }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* PAGE LAYOUT */
+  .page-content {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    flex: 1;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    letter-spacing: 5px;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(57,255,20,0.3);
+  }
+
+  .role-badge {
+    font-size: 10px;
+    letter-spacing: 3px;
+    padding: 5px 12px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+
+  .role-badge.commander { border-color: var(--amber); color: var(--amber); background: rgba(255,179,0,0.05); }
+  .role-badge.operative { border-color: var(--blue); color: var(--blue); background: rgba(0,207,255,0.05); }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--dim);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* COMMANDER PANEL */
+  .command-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    padding: 20px;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+
+  .cmd-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .field-label::before { content: '▸'; color: var(--amber); font-size: 8px; }
+
+  input[type="text"], input[type="date"], textarea, select {
+    width: 100%;
+    background: #080d06;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+    resize: none;
+  }
+
+  input:focus, textarea:focus, select:focus { border-color: var(--amber); }
+  select { cursor: pointer; }
+  select option { background: var(--panel); }
+
+  textarea { min-height: 70px; }
+
+  .priority-select {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .priority-opt {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .priority-opt[data-p="LOW"].selected { border-color: var(--green); color: var(--green); background: rgba(57,255,20,0.07); }
+  .priority-opt[data-p="MEDIUM"].selected { border-color: var(--amber); color: var(--amber); background: rgba(255,179,0,0.07); }
+  .priority-opt[data-p="HIGH"].selected { border-color: var(--red); color: var(--red); background: rgba(255,59,48,0.07); }
+
+  .btn-issue {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    letter-spacing: 5px;
+    padding: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    margin-top: 4px;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  }
+
+  .btn-issue:hover { background: var(--amber); color: var(--dark); }
+
+  /* MISSION CARD */
+  .mission-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+    animation: cardIn 0.3s ease-out;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .mission-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    cursor: pointer;
+    gap: 10px;
+  }
+
+  .mission-id {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+  }
+
+  .mission-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .priority-tag {
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border: 1px solid;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .priority-tag.LOW { border-color: var(--green); color: var(--green); }
+  .priority-tag.MEDIUM { border-color: var(--amber); color: var(--amber); }
+  .priority-tag.HIGH { border-color: var(--red); color: var(--red); }
+
+  .status-tag {
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border: 1px solid;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .status-tag.ACTIVE { border-color: var(--blue); color: var(--blue); }
+  .status-tag.COMPLETED { border-color: var(--green); color: var(--green); }
+  .status-tag.FAILED { border-color: var(--red); color: var(--red); }
+
+  .mission-body {
+    padding: 14px 16px;
+    display: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mission-body.open { display: block; }
+
+  .mission-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .mission-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .mission-meta span { display: flex; align-items: center; gap: 5px; }
+
+  /* PROOF SECTION */
+  .proof-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .proof-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--dim);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .proof-upload-area {
+    border: 1px dashed var(--border);
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .proof-input { display: none; }
+
+  .btn-upload-proof {
+    background: transparent;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-upload-proof:hover { background: rgba(0,207,255,0.1); }
+
+  .proof-text-input {
+    flex: 1;
+    min-width: 200px;
+    background: #080d06;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 7px 10px;
+    outline: none;
+  }
+
+  .btn-submit-proof {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-submit-proof:hover { background: var(--green); color: var(--dark); }
+
+  /* PROOF ITEMS */
+  .proof-list { margin-top: 10px; }
+
+  .proof-item {
+    background: rgba(57,255,20,0.03);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--green);
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .proof-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .proof-operative { color: var(--green); font-size: 10px; letter-spacing: 2px; }
+  .proof-time { color: var(--dim); font-size: 9px; letter-spacing: 1px; }
+  .proof-img { max-width: 180px; max-height: 120px; border: 1px solid var(--border); margin-top: 6px; filter: saturate(0.6); display: block; }
+  .proof-note { color: var(--text); font-size: 12px; line-height: 1.4; }
+
+  /* COMMANDER ACTIONS */
+  .cmd-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255,179,0,0.03);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .btn-cmd {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 6px 12px;
+    border: 1px solid;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-cmd.complete { border-color: var(--green); color: var(--green); }
+  .btn-cmd.complete:hover { background: rgba(57,255,20,0.1); }
+  .btn-cmd.fail { border-color: var(--red); color: var(--red); }
+  .btn-cmd.fail:hover { background: rgba(255,59,48,0.1); }
+  .btn-cmd.delete { border-color: var(--dim); color: var(--dim); }
+  .btn-cmd.delete:hover { border-color: var(--red); color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 2px;
+    border: 1px dashed var(--border);
+  }
+
+  .empty-icon { font-size: 30px; margin-bottom: 10px; opacity: 0.4; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--panel);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    z-index: 9999;
+    animation: toastIn 0.3s ease-out;
+    text-transform: uppercase;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .filter-btn.active { border-color: var(--green); color: var(--green); background: rgba(57,255,20,0.05); }
+
+  @media (max-width: 640px) {
+    .cmd-row { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div id="navbar">
+  <div class="nav-brand">HERMES</div>
+  <div class="nav-links">
+    <a href="chat.html" class="nav-link">COMMS</a>
+    <a href="missions.html" class="nav-link active">MISSIONS</a>
+    <button id="logoutBtn">DISCONNECT</button>
+  </div>
+</div>
+
+<div class="status-strip">
+  <span><span class="dot amber"></span>MISSION CONTROL // ACTIVE</span>
+  <span id="clock">--:--:-- UTC</span>
+</div>
+
+<div class="page-content">
+
+  <div class="page-header">
+    <div class="page-title">// MISSION BOARD</div>
+    <div id="roleBadge" class="role-badge operative">OPERATIVE</div>
+  </div>
+
+  <!-- COMMANDER PANEL (hidden for operatives) -->
+  <div class="section" id="commanderPanel" style="display:none;">
+    <div class="section-label">COMMAND CONSOLE — ISSUE NEW MISSION</div>
+    <div class="command-panel">
+      <div class="cmd-row">
+        <div>
+          <div class="field-label">MISSION DESIGNATION</div>
+          <input type="text" id="missionTitle" placeholder="E.g. OPERATION NIGHTFALL">
+        </div>
+        <div>
+          <div class="field-label">DEADLINE</div>
+          <input type="date" id="missionDeadline">
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="field-label">MISSION BRIEFING</div>
+        <textarea id="missionDesc" placeholder="Describe the objective, location, rules of engagement..."></textarea>
+      </div>
+      <div class="field-label" style="margin-bottom:8px;">THREAT LEVEL</div>
+      <div class="priority-select" id="prioritySelect">
+        <div class="priority-opt" data-p="LOW">▸ LOW</div>
+        <div class="priority-opt selected" data-p="MEDIUM">▸▸ MEDIUM</div>
+        <div class="priority-opt" data-p="HIGH">▸▸▸ HIGH</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="field-label">ASSIGNED UNIT / OPERATIVE</div>
+        <input type="text" id="missionAssigned" placeholder="E.g. ALPHA SQUAD or leave blank for all">
+      </div>
+      <button class="btn-issue" id="issueMissionBtn">⬛ ISSUE MISSION ORDER</button>
+    </div>
+  </div>
+
+  <!-- MISSION LIST -->
+  <div class="section">
+    <div class="section-label">ACTIVE MISSION DOSSIERS</div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="ALL">ALL</button>
+      <button class="filter-btn" data-filter="ACTIVE">ACTIVE</button>
+      <button class="filter-btn" data-filter="COMPLETED">COMPLETED</button>
+      <button class="filter-btn" data-filter="FAILED">FAILED</button>
+    </div>
+
+    <div id="missionList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        LOADING MISSION DATA...
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getDatabase, ref, set, remove, update, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpfkkOznjSvyyaEWNsG00huwlA8ObY6j8",
+    authDomain: "chat-80d74.firebaseapp.com",
+    projectId: "chat-80d74",
+    storageBucket: "chat-80d74.appspot.com",
+    messagingSenderId: "1085559718603",
+    appId: "1:1085559718603:web:c7a9a7f26b1535d080514e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+const auth = getAuth(app);
+
+  // ============================================================
+  // 🔑 REPLACE THIS WITH YOUR FIREBASE UID TO GET ADMIN ACCESS
+  // Find it in Firebase Console → Authentication → Users
+  // ============================================================
+  const ADMIN_UID = "d2ACsuQimagBFR4liwoHcpThaQs2";
+
+  let currentUser = null;
+  let isCommander = false;
+  let currentFilter = 'ALL';
+  let selectedPriority = 'MEDIUM';
+  let allMissions = {};
+
+  // Clock
+  setInterval(() => {
+    document.getElementById('clock').textContent = new Date().toUTCString().slice(17,25) + ' UTC';
+  }, 1000);
+
+  document.getElementById('logoutBtn').onclick = async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  };
+
+  // Priority selector
+  document.querySelectorAll('.priority-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.priority-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedPriority = opt.dataset.p;
+    });
+  });
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderMissions();
+    });
+  });
+
+  function showToast(msg, color = 'var(--green)') {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.style.borderColor = color;
+    t.style.color = color;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = "index.html"; return; }
+    currentUser = user;
+
+    // Check role by UID
+    if (user.uid === ADMIN_UID) {
+      isCommander = true;
+      document.getElementById('commanderPanel').style.display = 'block';
+      document.getElementById('roleBadge').className = 'role-badge commander';
+      document.getElementById('roleBadge').textContent = 'COMMANDER';
+    }
+
+    loadMissions();
+  });
+
+  // Issue mission
+  document.getElementById('issueMissionBtn').addEventListener('click', async () => {
+    const title = document.getElementById('missionTitle').value.trim();
+    const desc = document.getElementById('missionDesc').value.trim();
+    const deadline = document.getElementById('missionDeadline').value;
+    const assigned = document.getElementById('missionAssigned').value.trim();
+
+    if (!title || !desc) { showToast('TITLE & BRIEFING REQUIRED', 'var(--red)'); return; }
+
+    const missionRef = push(ref(db, 'missions'));
+    await set(missionRef, {
+      title: title.toUpperCase(),
+      description: desc,
+      priority: selectedPriority,
+      deadline: deadline || null,
+      assigned: assigned || 'ALL OPERATIVES',
+      status: 'ACTIVE',
+      issuedBy: currentUser.displayName || currentUser.email,
+      issuedAt: Date.now()
+    });
+
+    document.getElementById('missionTitle').value = '';
+    document.getElementById('missionDesc').value = '';
+    document.getElementById('missionDeadline').value = '';
+    document.getElementById('missionAssigned').value = '';
+    showToast('MISSION ORDER ISSUED');
+  });
+
+  function loadMissions() {
+    onValue(ref(db, 'missions'), (snap) => {
+      allMissions = snap.val() || {};
+      renderMissions();
+    });
+  }
+
+  function renderMissions() {
+    const list = document.getElementById('missionList');
+
+    const entries = Object.entries(allMissions).reverse();
+    const filtered = currentFilter === 'ALL' ? entries : entries.filter(([,m]) => m.status === currentFilter);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>NO ${currentFilter === 'ALL' ? '' : currentFilter + ' '}MISSIONS ON RECORD</div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    filtered.forEach(([key, mission]) => {
+      list.appendChild(buildMissionCard(key, mission));
+    });
+  }
+
+  function buildMissionCard(key, mission) {
+    const card = document.createElement('div');
+    card.className = 'mission-card';
+    card.id = 'mission-' + key;
+
+    const deadlineStr = mission.deadline ? new Date(mission.deadline).toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase() : 'OPEN';
+    const issuedStr = new Date(mission.issuedAt).toUTCString().slice(0,16).toUpperCase();
+
+    // Build proofs HTML
+    const proofs = mission.proofs ? Object.entries(mission.proofs) : [];
+    const proofsHTML = proofs.length > 0
+      ? proofs.map(([pid, proof]) => `
+          <div class="proof-item">
+            <div class="proof-item-header">
+              <span class="proof-operative">▸ ${proof.operative}</span>
+              <span class="proof-time">${new Date(proof.time).toUTCString().slice(17,25)} UTC</span>
+            </div>
+            ${proof.note ? `<div class="proof-note">${proof.note}</div>` : ''}
+            ${proof.imgUrl ? `<img src="${proof.imgUrl}" class="proof-img">` : ''}
+          </div>`).join('')
+      : '<div style="font-size:11px;color:var(--dim);letter-spacing:1px;">NO PROOF SUBMITTED YET</div>';
+
+    const commanderActionsHTML = isCommander ? `
+      <div class="cmd-actions">
+        <span style="font-size:10px;color:var(--dim);letter-spacing:2px;margin-right:4px;">CMD ▸</span>
+        <button class="btn-cmd complete" onclick="window._missionAction('${key}', 'COMPLETED')">✓ MARK COMPLETE</button>
+        <button class="btn-cmd fail" onclick="window._missionAction('${key}', 'FAILED')">✕ MARK FAILED</button>
+        <button class="btn-cmd delete" onclick="window._deleteMission('${key}')">⬛ DELETE</button>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="mission-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div>
+          <div class="mission-id">MISSION-${key.slice(-6).toUpperCase()}</div>
+          <div class="mission-title">${mission.title}</div>
+        </div>
+        <span class="priority-tag ${mission.priority}">${mission.priority}</span>
+        <span class="status-tag ${mission.status}">${mission.status}</span>
+      </div>
+      <div class="mission-body">
+        <div class="mission-desc">${mission.description}</div>
+        <div class="mission-meta">
+          <span>📅 DEADLINE: ${deadlineStr}</span>
+          <span>👤 ASSIGNED: ${mission.assigned}</span>
+          <span>🎖 ISSUED BY: ${mission.issuedBy}</span>
+          <span>📡 ISSUED: ${issuedStr}</span>
+        </div>
+
+        <div class="proof-section">
+          <div class="proof-label">▸▸ MISSION PROOF / AFTER-ACTION REPORTS</div>
+          <div class="proof-list" id="proofs-${key}">${proofsHTML}</div>
+
+          ${mission.status === 'ACTIVE' ? `
+          <div class="proof-upload-area" style="margin-top:10px;">
+            <input type="file" accept="image/*" class="proof-input" id="proofFile-${key}">
+            <button class="btn-upload-proof" onclick="document.getElementById('proofFile-${key}').click()">📎 ATTACH IMAGE</button>
+            <input type="text" class="proof-text-input" id="proofNote-${key}" placeholder="After-action report...">
+            <button class="btn-submit-proof" onclick="window._submitProof('${key}')">SUBMIT ▶</button>
+          </div>
+          <div id="proofFileName-${key}" style="font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:5px;"></div>
+          ` : `<div style="font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:8px;">MISSION ${mission.status} — SUBMISSIONS CLOSED</div>`}
+        </div>
+      </div>
+      ${commanderActionsHTML}
+    `;
+
+    // File name display
+    if (mission.status === 'ACTIVE') {
+      setTimeout(() => {
+        const fileInput = document.getElementById('proofFile-' + key);
+        if (fileInput) {
+          fileInput.addEventListener('change', () => {
+            const nameDiv = document.getElementById('proofFileName-' + key);
+            if (nameDiv) nameDiv.textContent = fileInput.files[0] ? '▸ ' + fileInput.files[0].name : '';
+          });
+        }
+      }, 50);
+    }
+
+    return card;
+  }
+
+  window._submitProof = async (missionKey) => {
+    const note = document.getElementById('proofNote-' + missionKey)?.value.trim();
+    const fileInput = document.getElementById('proofFile-' + missionKey);
+    const file = fileInput?.files[0];
+
+    if (!note && !file) { showToast('ATTACH IMAGE OR WRITE REPORT', 'var(--red)'); return; }
+
+    showToast('UPLOADING...', 'var(--amber)');
+
+    let imgBase64 = '';
+    if (file) {
+      // Resize + convert to base64 to avoid hitting DB limits
+      imgBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX = 800;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const proofRef = push(ref(db, `missions/${missionKey}/proofs`));
+    await set(proofRef, {
+      operative: currentUser.displayName || currentUser.email,
+      uid: currentUser.uid,
+      note: note || '',
+      imgUrl: imgBase64 || '',
+      time: Date.now()
+    });
+
+    showToast('PROOF SUBMITTED — AWAITING VERIFICATION');
+    if (document.getElementById('proofNote-' + missionKey)) document.getElementById('proofNote-' + missionKey).value = '';
+    if (fileInput) { fileInput.value = ''; document.getElementById('proofFileName-' + missionKey).textContent = ''; }
+  };
+
+  window._missionAction = async (key, status) => {
+    await update(ref(db, 'missions/' + key), { status });
+    showToast('MISSION STATUS UPDATED: ' + status, status === 'COMPLETED' ? 'var(--green)' : 'var(--red)');
+  };
+
+  window._deleteMission = async (key) => {
+    if (!confirm('DELETE MISSION? THIS CANNOT BE UNDONE.')) return;
+    await remove(ref(db, 'missions/' + key));
+    showToast('MISSION RECORD DELETED', 'var(--red)');
+  };
+</script>
+</body>
+</html>
