@@ -629,7 +629,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-  import { getDatabase, ref, set, remove, update, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+  import { getDatabase, ref, set, remove, update, onValue, onChildAdded, push, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
 
@@ -657,6 +657,22 @@ const auth = getAuth(app);
   let currentFilter = 'ALL';
   let selectedPriority = 'MEDIUM';
   let allMissions = {};
+
+  // ── NOTIFICATIONS ──────────────────────────────────────────
+  async function requestNotifPermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }
+
+  function sendNotif(title, body) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const n = new Notification(title, { body, silent: false });
+    n.onclick = () => { window.focus(); n.close(); };
+    setTimeout(() => n.close(), 7000);
+  }
+  // ────────────────────────────────────────────────────────────
 
   // Clock
   setInterval(() => {
@@ -700,6 +716,7 @@ const auth = getAuth(app);
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = "index.html"; return; }
     currentUser = user;
+    requestNotifPermission();
 
     // Check role by UID
     if (user.uid === ADMIN_UID) {
@@ -741,6 +758,24 @@ const auth = getAuth(app);
   });
 
   function loadMissions() {
+    // Notify on newly added missions (skip existing ones on load)
+    let missionsInitialLoadDone = false;
+    setTimeout(() => { missionsInitialLoadDone = true; }, 3000);
+
+    onChildAdded(ref(db, 'missions'), (snap) => {
+      if (!missionsInitialLoadDone) return;
+      const m = snap.val();
+      if (!m || !currentUser) return;
+      // Don't notify the commander who just issued it
+      const issuedByMe = m.issuedBy === (currentUser.displayName || currentUser.email);
+      if (!issuedByMe) {
+        sendNotif(
+          `HERMES // NEW MISSION ORDER`,
+          `▸ ${m.title}\n📋 ${m.description?.slice(0, 80) || ''}\n⚡ PRIORITY: ${m.priority}`
+        );
+      }
+    });
+
     onValue(ref(db, 'missions'), (snap) => {
       allMissions = snap.val() || {};
       renderMissions();

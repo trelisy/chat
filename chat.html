@@ -363,9 +363,27 @@
     document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }) + ' ET';
   }, 1000);
 
+  // ── NOTIFICATIONS ──────────────────────────────────────────
+  async function requestNotifPermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }
+
+  function sendNotif(title, body, icon = '') {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (document.visibilityState === 'visible') return; // only notify when tab is hidden
+    const n = new Notification(title, { body, icon, silent: false });
+    n.onclick = () => { window.focus(); n.close(); };
+    setTimeout(() => n.close(), 6000);
+  }
+  // ────────────────────────────────────────────────────────────
+
   onAuthStateChanged(auth, async user => {
     if (!user) { window.location.href = "index.html"; return; }
     currentUser = user;
+    requestNotifPermission();
     // Try DB first, then Auth profile — never fall back to email
     async function fetchUsername() {
       try {
@@ -414,9 +432,18 @@
     });
   };
 
+  let initialLoadDone = false;
+  setTimeout(() => { initialLoadDone = true; }, 2500); // suppress notifs for messages already in DB
+
   onChildAdded(ref(db, "messages"), async (data) => {
     const val = data.val();
     const isMine = currentUser && val.uid === currentUser.uid;
+
+    // Fire notification for messages from others, after initial load
+    if (initialLoadDone && !isMine) {
+      const preview = val.msg ? val.msg.slice(0, 80) : '📡 [IMAGE]';
+      sendNotif(`HERMES // NEW TRANSMISSION`, `▸ ${val.sender}: ${preview}`);
+    }
 
     let avatarHTML = '';
     try {
